@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Posting, Sessioning } from "./app";
+import { Authing, Commenting, Friending, Grouping, Matching, Posting, Scheduling, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -106,6 +106,119 @@ class Routes {
     return Posting.delete(oid);
   }
 
+  @Router.get("/comments")
+  @Router.validate(z.object({ author: z.string().optional() }))
+  async getComments(author?: string) {
+    let comments;
+    if (author) {
+      const id = (await Authing.getUserByUsername(author))._id;
+      comments = await Commenting.getByAuthor(id);
+    } else {
+      comments = await Commenting.getComments();
+    }
+    return Responses.comments(comments);
+  }
+  @Router.get("/comments/:parent")
+  async getCommentsByParent(parent: string) {
+    const parentOid = new ObjectId(parent);
+    try {
+      await Posting.assertPostExists(parentOid);
+    } catch {
+      await Commenting.assertCommentExists(parentOid);
+    }
+    return Responses.comments(await Commenting.getByParent(parentOid));
+  }
+  @Router.post("/comments")
+  async createComment(session: SessionDoc, content: string, parent: string) {
+    const user = Sessioning.getUser(session);
+    const parentOid = new ObjectId(parent);
+    try {
+      await Posting.assertPostExists(parentOid);
+    } catch {
+      await Commenting.assertCommentExists(parentOid);
+    }
+    const created = await Commenting.create(user, content, parentOid);
+    return { msg: created.msg, comment: await Responses.comment(created.comment) };
+  }
+  @Router.patch("/comments/:id")
+  async updateComment(session: SessionDoc, id: string, content?: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Commenting.assertAuthorIsUser(oid, user);
+    return await Commenting.update(oid, content);
+  }
+  @Router.delete("/comments/:id")
+  async deleteComment(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Commenting.assertAuthorIsUser(oid, user);
+    return Commenting.delete(oid);
+  }
+
+  @Router.get("/groups")
+  @Router.validate(z.object({ member: z.string().optional() }))
+  async getGroups(member?: string) {
+    let groups;
+    if (member) {
+      const id = (await Authing.getUserByUsername(member))._id;
+      groups = await Grouping.getByMembership(id);
+    } else {
+      groups = await Grouping.getCommunities();
+    }
+    return Responses.groups(groups);
+  }
+
+  @Router.get("/groups/:founder")
+  async getGroupsByFounder(founder: string) {
+    const founderOid = (await Authing.getUserByUsername(founder))._id;
+    const groups = await Grouping.getByFounder(founderOid);
+    return Responses.groups(groups);
+  }
+
+  @Router.post("/groups/")
+  async createGroup(session: SessionDoc, name: string) {
+    const user = Sessioning.getUser(session);
+    const founderOid = new ObjectId(user);
+    const created = await Grouping.create(name, founderOid);
+    return { msg: created.msg, group: await Responses.group(created.group) };
+  }
+
+  @Router.patch("/groups/:id")
+  async addContentToGroup(session: SessionDoc, id: string, contentId: ObjectId) {
+    const user = Sessioning.getUser(session);
+    const groupOid = new ObjectId(id);
+    return await Grouping.addContent(user, groupOid, contentId);
+  }
+
+  @Router.patch("/groups/:id/remove")
+  async removeContentFromGroup(session: SessionDoc, id: string, contentId: ObjectId) {
+    const user = Sessioning.getUser(session);
+    const groupOid = new ObjectId(id);
+    return await Grouping.removeContent(user, groupOid, contentId);
+  }
+
+  @Router.patch("/groups/:id/join")
+  async joinGroup(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const groupOid = new ObjectId(id);
+    return await Grouping.joinCommunity(user, groupOid);
+  }
+
+  @Router.patch("/groups/:id/leave")
+  async leaveGroup(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const groupOid = new ObjectId(id);
+    return await Grouping.leaveCommunity(user, groupOid);
+  }
+
+  @Router.delete("/groups/:id")
+  async deleteGroup(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const groupOid = new ObjectId(id);
+    await Grouping.assertUserIsFounder(user, groupOid);
+    return await Grouping.deleteCommunity(user, groupOid);
+  }
+
   @Router.get("/friends")
   async getFriends(session: SessionDoc) {
     const user = Sessioning.getUser(session);
@@ -152,8 +265,298 @@ class Routes {
     const fromOid = (await Authing.getUserByUsername(from))._id;
     return await Friending.rejectRequest(fromOid, user);
   }
-}
 
+  @Router.post("/matches/request")
+  async requestPartner(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Matching.addUnmatchedUser(user);
+  }
+
+  @Router.get("/matches/")
+  async getMatchOrStatus(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    const status = await Matching.getUserStatus(user);
+    const other = await Matching.getMatch(user);
+    if (status.status === "matched") {
+      return { msg: "You are matched with " + (await Authing.getUserById(other)).username + "!" };
+    } else {
+      return { msg: "You are currently in the matching pool." };
+    }
+  }
+
+  @Router.get("/matches/all")
+  async getAllMatches() {
+    const matches = await Matching.getAllMatches();
+    return Responses.matches(matches);
+  }
+
+  @Router.get("/matches/unmatched")
+  async getUnmatchedPool() {
+    const pool = await Matching.getUnmatchedPool();
+    return Responses.unmatchedPool(pool);
+  }
+
+  @Router.get("/matches/goal")
+  async getGoals(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Matching.getUserGoals(user);
+  }
+
+  @Router.get("/matches/goal/partner")
+  async getPartnerGoals(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Matching.getPartnerGoals(user);
+  }
+
+  @Router.delete("/matches/")
+  async removeMatch(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    const other = await Matching.getMatch(user);
+    return await Matching.removeMatch(user, other);
+  }
+
+  @Router.delete("/matches/user")
+  async removeUserFromPool(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Matching.removeUnmatchedUser(user);
+  }
+
+  @Router.put("/matches/goal")
+  async shareGoal(session: SessionDoc, goal: string) {
+    const user = Sessioning.getUser(session);
+    return await Matching.addGoal(user, goal);
+  }
+
+  @Router.patch("/matches/goal")
+  async updateGoal(session: SessionDoc, oldGoal: string, newGoal: string) {
+    const user = Sessioning.getUser(session);
+    return await Matching.updateGoal(user, oldGoal, newGoal);
+  }
+
+  @Router.delete("/matches/goal")
+  async removeGoal(session: SessionDoc, goal: string) {
+    const user = Sessioning.getUser(session);
+    return await Matching.removeGoal(user, goal);
+  }
+
+  @Router.get("/events")
+  async getEvents() {
+    const events = await Scheduling.getEvents();
+    if (events) {
+      return {
+        events: await Promise.all(
+          events.map(async (event) => {
+            if (event.attendees) {
+              return {
+                ...event,
+                attendees: await Authing.idsToUsernames(event.attendees),
+              };
+            } else return event;
+          }),
+        ),
+      };
+    } else return events;
+  }
+
+  @Router.get("/events/:id")
+  async getEvent(id: string) {
+    const event = await Scheduling.getEvent(new ObjectId(id));
+    if (event?.attendees) {
+      return {
+        ...event,
+        attendees: await Authing.idsToUsernames(event.attendees),
+      };
+    } else return event;
+  }
+
+  @Router.post("/events")
+  async createEvent(session: SessionDoc, group: string, time: string, location: string, eventName: string) {
+    const groupId = new ObjectId(group);
+    const user = Sessioning.getUser(session);
+    return await Scheduling.createEvent(user, eventName, groupId, new Date(time), location);
+  }
+
+  @Router.patch("/events/:id/join")
+  async joinEvent(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    return await Scheduling.addAttendee(new ObjectId(id), user);
+  }
+
+  @Router.patch("/events/:id/leave")
+  async leaveEvent(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const timeVote = await Scheduling.getUserTimeVote(new ObjectId(id), user);
+    // clear user's votes before removing them from the event
+    if (timeVote) {
+      await Scheduling.unvoteOnTime(new ObjectId(id), new Date(timeVote), user);
+    }
+    const locationVote = await Scheduling.getUserLocationVote(new ObjectId(id), user);
+    if (locationVote) {
+      await Scheduling.unvoteOnLocation(new ObjectId(id), locationVote, user);
+    }
+    return await Scheduling.removeAttendee(new ObjectId(id), user);
+  }
+
+  @Router.delete("/events/:id")
+  async deleteEvent(session: SessionDoc, id: string) {
+    return await Scheduling.deleteEvent(new ObjectId(id));
+  }
+
+  @Router.patch("/events/:id/name")
+  async updateEventName(session: SessionDoc, id: string, name: string) {
+    return await Scheduling.updateName(new ObjectId(id), name);
+  }
+
+  @Router.post("/events/:id/time")
+  async addPossibleTime(session: SessionDoc, id: string, time: string) {
+    const user = Sessioning.getUser(session);
+    await Scheduling.addPossibleTime(new ObjectId(id), new Date(time));
+    const currentVote = await Scheduling.getUserTimeVote(new ObjectId(id), user);
+    if (currentVote) {
+      // Clear the user's current vote to set a new one
+      await Scheduling.unvoteOnTime(new ObjectId(id), new Date(currentVote), user);
+    }
+    const response = await Scheduling.voteOnTime(new ObjectId(id), new Date(time), user);
+    const newBestTime = await Scheduling.calculateBestTime(new ObjectId(id));
+    if (newBestTime.bestTime) {
+      await Scheduling.setBestTime(new ObjectId(id), new Date(newBestTime.bestTime));
+      return { response, bestTime: newBestTime.bestTime };
+    } else {
+      return response;
+    }
+  }
+
+  @Router.delete("/events/:id/time")
+  async removePossibleTime(session: SessionDoc, id: string, time: string) {
+    const user = Sessioning.getUser(session);
+    await Scheduling.unvoteOnTime(new ObjectId(id), new Date(time), user);
+    const response = await Scheduling.removePossibleTime(new ObjectId(id), new Date(time));
+    const newBestTime = await Scheduling.calculateBestTime(new ObjectId(id));
+    if (newBestTime.bestTime) {
+      await Scheduling.setBestTime(new ObjectId(id), new Date(newBestTime.bestTime));
+      return { response, bestTime: newBestTime.bestTime };
+    } else {
+      return response;
+    }
+  }
+
+  @Router.post("/events/:id/time/vote")
+  async voteTime(session: SessionDoc, id: string, time: string) {
+    const user = Sessioning.getUser(session);
+    const vote = await Scheduling.getUserTimeVote(new ObjectId(id), user);
+    if (vote) {
+      // Clear the user's current vote to set a new one
+      await Scheduling.unvoteOnTime(new ObjectId(id), new Date(vote), user);
+    }
+    const response = await Scheduling.voteOnTime(new ObjectId(id), new Date(time), user);
+    const newBestTime = await Scheduling.calculateBestTime(new ObjectId(id));
+    if (newBestTime.bestTime) {
+      await Scheduling.setBestTime(new ObjectId(id), new Date(newBestTime.bestTime));
+      return { response, bestTime: newBestTime.bestTime };
+    } else {
+      return response;
+    }
+  }
+
+  @Router.delete("/events/:id/time/vote")
+  async unvoteTime(session: SessionDoc, id: string, time: string) {
+    const user = Sessioning.getUser(session);
+    const response = await Scheduling.unvoteOnTime(new ObjectId(id), new Date(time), user);
+    const newBestTime = await Scheduling.calculateBestTime(new ObjectId(id));
+    if (newBestTime.bestTime) {
+      await Scheduling.setBestTime(new ObjectId(id), new Date(newBestTime.bestTime));
+      return { response, bestTime: newBestTime.bestTime };
+    } else {
+      return response;
+    }
+  }
+
+  @Router.post("/events/:id/location")
+  async addPossibleLocation(session: SessionDoc, id: string, location: string) {
+    const user = Sessioning.getUser(session);
+    await Scheduling.addPossibleLocation(new ObjectId(id), location);
+    const currentVote = await Scheduling.getUserLocationVote(new ObjectId(id), user);
+    if (currentVote) {
+      // Clear the user's current vote to set a new one
+      await Scheduling.unvoteOnLocation(new ObjectId(id), currentVote, user);
+    }
+    const response = await Scheduling.voteOnLocation(new ObjectId(id), location, user);
+    const newBestLocation = await Scheduling.calculateBestLocation(new ObjectId(id));
+    if (newBestLocation.bestLocation) {
+      await Scheduling.setBestLocation(new ObjectId(id), newBestLocation.bestLocation);
+      return { response, bestLocation: newBestLocation.bestLocation };
+    } else {
+      return response;
+    }
+  }
+
+  @Router.post("/events/:id/location/vote")
+  async voteLocation(session: SessionDoc, id: string, location: string) {
+    const user = Sessioning.getUser(session);
+    const currentVote = await Scheduling.getUserLocationVote(new ObjectId(id), user);
+    if (currentVote) {
+      // Clear the user's current vote to set a new one
+      await Scheduling.unvoteOnLocation(new ObjectId(id), currentVote, user);
+    }
+    const voteMessage = await Scheduling.voteOnLocation(new ObjectId(id), location, user);
+    const newBestLocation = await Scheduling.calculateBestLocation(new ObjectId(id));
+    if (newBestLocation.bestLocation) {
+      await Scheduling.setBestLocation(new ObjectId(id), newBestLocation.bestLocation);
+      return { voteMessage, bestLocation: newBestLocation.bestLocation };
+    } else {
+      return voteMessage;
+    }
+  }
+
+  @Router.delete("/events/:id/location/vote")
+  async unvoteLocation(session: SessionDoc, id: string, location: string) {
+    const user = Sessioning.getUser(session);
+    const unvoteMessage = await Scheduling.unvoteOnLocation(new ObjectId(id), location, user);
+    const newBestLocation = await Scheduling.calculateBestLocation(new ObjectId(id));
+    if (newBestLocation.bestLocation) {
+      await Scheduling.setBestLocation(new ObjectId(id), newBestLocation.bestLocation);
+      return { unvoteMessage, bestLocation: newBestLocation.bestLocation };
+    } else {
+      return unvoteMessage;
+    }
+  }
+
+  @Router.delete("/events/:id/location")
+  async removePossibleLocation(session: SessionDoc, id: string, location: string) {
+    const user = Sessioning.getUser(session);
+    await Scheduling.unvoteOnLocation(new ObjectId(id), location, user);
+    const removeMessage = await Scheduling.removePossibleLocation(new ObjectId(id), location);
+    const newBestLocation = await Scheduling.calculateBestLocation(new ObjectId(id));
+    if (newBestLocation.bestLocation) {
+      await Scheduling.setBestLocation(new ObjectId(id), newBestLocation.bestLocation);
+      return { removeMessage, bestLocation: newBestLocation.bestLocation };
+    } else {
+      return removeMessage;
+    }
+  }
+
+  @Router.get("/events/:id/votes")
+  async getUserVotes(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    return {
+      time: await Scheduling.getUserTimeVote(new ObjectId(id), user),
+      location: await Scheduling.getUserLocationVote(new ObjectId(id), user),
+    };
+  }
+
+  @Router.get("/events/:id/attendees")
+  async getAttendees(id: string) {
+    return await Scheduling.getAttendees(new ObjectId(id));
+  }
+
+  @Router.get("/events/:id/allVotes")
+  async getAllVotes(id: string) {
+    return {
+      times: await Scheduling.getAllTimeVotes(new ObjectId(id)),
+      locations: await Scheduling.getAllLocationVotes(new ObjectId(id)),
+    };
+  }
+}
 /** The web app. */
 export const app = new Routes();
 

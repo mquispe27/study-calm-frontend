@@ -36,6 +36,10 @@ export default class PostingConcept {
     return await this.posts.readMany({}, { sort: { _id: -1 } });
   }
 
+  async getById(_id: ObjectId) {
+    return await this.posts.readOne({ _id });
+  }
+
   async getByAuthor(author: ObjectId) {
     return await this.posts.readMany({ author });
   }
@@ -59,6 +63,12 @@ export default class PostingConcept {
     }
     if (post.author.toString() !== user.toString()) {
       throw new PostAuthorNotMatchError(user, _id);
+    }
+  }
+
+  async assertPostExists(_id: ObjectId) {
+    if (!(await this.posts.readOne({ _id }))) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
     }
   }
 }
