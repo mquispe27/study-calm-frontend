@@ -4,12 +4,21 @@ import { fetchy } from "../../utils/fetchy";
 
 const content = ref("");
 const emit = defineEmits(["refreshPosts"]);
+const props = defineProps<{ inCommunity: boolean; communityName?: string }>();
 
 const createPost = async (content: string) => {
   try {
-    await fetchy("/api/posts", "POST", {
+    const createdPost = await fetchy("/api/posts", "POST", {
       body: { content },
     });
+    if (props.inCommunity) {
+      const group = await fetchy(`/api/groups/${props.communityName}`, "GET");
+      const groupId = group._id;
+      // add content to community
+      await fetchy(`/api/groups/${groupId}`, "PATCH", {
+        body: { contentId: createdPost.post._id },
+      });
+    }
   } catch (_) {
     return;
   }

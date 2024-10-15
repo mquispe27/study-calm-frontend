@@ -9,7 +9,7 @@ const props = defineProps<{ parent: string; post?: any; comment?: any; showBox: 
 const loaded = ref(false);
 let comments = ref<Array<Record<string, string>>>([]);
 let editing = ref("");
-const emit = defineEmits(["hideReplyBox"]);
+const _emit = defineEmits(["hideReplyBox"]);
 
 async function getCommentsByParent(parent?: string) {
   let commentResults;

@@ -79,15 +79,20 @@ export default class GroupingConcept {
   async addContent(user: ObjectId, communityId: ObjectId, contentId: ObjectId) {
     await this.assertContentDoesNotExistInCommunity(contentId, communityId);
     await this.assertUserIsInGroup(user, communityId);
-    await this.groups.collection.updateOne({ _id: communityId }, { $addToSet: { content: contentId } });
+    await this.groups.collection.updateOne({ _id: communityId }, { $push: { content: { $each: [contentId], $position: 0 } } });
     return { msg: "Content successfully added to the community!" };
   }
 
   async removeContent(user: ObjectId, communityId: ObjectId, contentId: ObjectId) {
     await this.assertContentExistsInCommunity(contentId, communityId);
     await this.assertUserIsInGroup(user, communityId);
-    await this.groups.collection.updateOne({ _id: communityId }, { $pull: { content: contentId } });
+    await this.groups.collection.updateOne({ _id: communityId }, { $pull: { content: contentId.toString() } });
     return { msg: "Content successfully removed from the community!" };
+  }
+
+  async removeContentFromAllCommunities(contentId: ObjectId) {
+    const result = await this.groups.collection.updateMany({}, { $pull: { content: contentId.toString() } });
+    return { msg: "Content successfully removed from all communities!", result };
   }
 
   async assertGroupExists(_id: ObjectId) {

@@ -103,7 +103,8 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    return Posting.delete(oid);
+    await Grouping.removeContentFromAllCommunities(oid);
+    return await Posting.delete(oid);
   }
 
   @Router.get("/comments")
@@ -168,11 +169,32 @@ class Routes {
     return Responses.groups(groups);
   }
 
-  @Router.get("/groups/:founder")
+  @Router.get("/groups/founder")
   async getGroupsByFounder(founder: string) {
     const founderOid = (await Authing.getUserByUsername(founder))._id;
     const groups = await Grouping.getByFounder(founderOid);
     return Responses.groups(groups);
+  }
+
+  @Router.get("/groups/:name")
+  async getGroupByName(name: string) {
+    return await Grouping.getByName(name);
+  }
+
+  @Router.get("/groups/:id/content")
+  async getGroupContent(id: string) {
+    const groupOid = new ObjectId(id);
+    const allContent = await Grouping.getAllContent(groupOid);
+
+    if (allContent) {
+      const posts = await Promise.all(allContent.content.map((content) => Posting.getById(new ObjectId(content))));
+      const filteredPosts = posts.filter((post) => post !== null);
+      if (posts) {
+        return Responses.posts(filteredPosts);
+      }
+      return posts;
+    }
+    return allContent;
   }
 
   @Router.post("/groups/")

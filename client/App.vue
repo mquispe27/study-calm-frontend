@@ -4,6 +4,7 @@ import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 import { computed, onBeforeMount } from "vue";
 import { RouterLink, RouterView, useRoute } from "vue-router";
+import CommunitySidebar from "./components/Community/CommunitySidebar.vue";
 
 const currentRoute = useRoute();
 const currentRouteName = computed(() => currentRoute.name);
@@ -46,7 +47,12 @@ onBeforeMount(async () => {
       <p>{{ toast.message }}</p>
     </article>
   </header>
-  <RouterView />
+  <div class="main-content">
+    <div class="sidebar">
+      <CommunitySidebar />
+    </div>
+    <RouterView />
+  </div>
 </template>
 
 <style scoped>
@@ -91,5 +97,21 @@ ul {
 
 .underline {
   text-decoration: underline;
+}
+
+.main-content {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.main-content > * {
+  flex: 1;
+}
+
+.sidebar {
+  flex: 0 0 250px;
+  background-color: #e0e0e0; /* Grayer color */
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 </style>
