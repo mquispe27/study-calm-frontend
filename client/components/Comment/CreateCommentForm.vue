@@ -4,7 +4,7 @@ import { fetchy } from "../../utils/fetchy";
 
 const props = defineProps(["post", "comment"]);
 const commentContent = ref("");
-const emit = defineEmits(["refreshComments"]);
+const emit = defineEmits(["refreshComments", "hideReplyBox"]);
 
 const createComment = async (content: string) => {
   try {
@@ -15,6 +15,7 @@ const createComment = async (content: string) => {
     return;
   }
   emit("refreshComments");
+  emit("hideReplyBox");
   emptyForm();
 };
 
@@ -26,7 +27,7 @@ const emptyForm = () => {
 <template>
   <form @submit.prevent="createComment(commentContent)">
     <textarea id="content" v-model="commentContent" placeholder="Write a comment!" required> </textarea>
-    <button type="submit" class="pure-button-primary pure-button">Reply</button>
+    <button type="submit" class="pure-button-primary pure-button">Comment</button>
   </form>
 </template>
 

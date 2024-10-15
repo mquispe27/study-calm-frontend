@@ -1,28 +1,23 @@
 <script setup lang="ts">
-import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
-import { storeToRefs } from "pinia";
 import { defineProps, onBeforeMount, ref } from "vue";
 import CommentComponent from "./CommentComponent.vue";
 import CreateCommentForm from "./CreateCommentForm.vue";
 import EditCommentForm from "./EditCommentForm.vue";
-const { isLoggedIn } = storeToRefs(useUserStore());
 
-const props = defineProps<{ parent: string; post?: any; comment?: any }>();
+const props = defineProps<{ parent: string; post?: any; comment?: any; showBox: boolean }>();
 const loaded = ref(false);
 let comments = ref<Array<Record<string, string>>>([]);
 let editing = ref("");
-let searchAuthor = ref("");
+const emit = defineEmits(["hideReplyBox"]);
 
 async function getCommentsByParent(parent?: string) {
-  let query: Record<string, string> = parent !== undefined ? { parent } : {};
   let commentResults;
   try {
-    commentResults = await fetchy(`/api/comments/${parent}`, "GET", { query });
+    commentResults = await fetchy(`/api/comments/${parent}`, "GET");
   } catch (_) {
     return;
   }
-  // searchAuthor.value = author ? author : "";
   comments.value = commentResults;
 }
 
@@ -34,21 +29,27 @@ onBeforeMount(async () => {
   await getCommentsByParent(props.parent);
   loaded.value = true;
 });
-// missing SearchCommentForm below h2
 </script>
 
 <template>
-  <section class="comments" v-if="loaded && comments.length !== 0">
+  <section class="comments" v-if="loaded && props.post && comments.length !== 0">
     <CreateCommentForm :post="props.post" :comment="props.comment" @refreshComments="getCommentsByParent(props.parent)" />
     <article v-for="comment in comments" :key="comment._id" class="comment">
       <CommentComponent v-if="editing !== comment._id" :comment="comment" @editComment="updateEditing" @refreshComments="getCommentsByParent(props.parent)" />
       <EditCommentForm v-else :comment="comment" @refreshComments="getCommentsByParent(props.parent)" @editComment="updateEditing" />
     </article>
   </section>
-  <p v-else-if="loaded">
+  <p v-else-if="loaded && props.post">
     No comments found. Be the first to reply!
     <CreateCommentForm :post="props.post" :comment="props.comment" @refreshComments="getCommentsByParent(props.parent)" />
   </p>
+  <section v-else-if="loaded && props.comment">
+    <CreateCommentForm v-if="showBox" :post="props.post" :comment="props.comment" @hideReplyBox="$emit('hideReplyBox')" @refreshComments="getCommentsByParent(props.parent)" />
+    <article v-for="comment in comments" :key="comment._id" class="comment">
+      <CommentComponent v-if="editing !== comment._id" :comment="comment" @editComment="updateEditing" @refreshComments="getCommentsByParent(props.parent)" />
+      <EditCommentForm v-else :comment="comment" @refreshComments="getCommentsByParent(props.parent)" @editComment="updateEditing" />
+    </article>
+  </section>
   <p v-else>Loading...</p>
 </template>
 

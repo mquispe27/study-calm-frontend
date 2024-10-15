@@ -1,5 +1,4 @@
 <script setup lang="ts">
-//import CreateCommentForm from "@/components/Comment/CreateCommentForm.vue";
 import { useUserStore } from "@/stores/user";
 import { formatDate } from "@/utils/formatDate";
 import { storeToRefs } from "pinia";
@@ -11,12 +10,14 @@ const emit = defineEmits(["editPost", "refreshPosts", "createComment", "refreshC
 const { currentUsername } = storeToRefs(useUserStore());
 
 const deletePost = async () => {
-  try {
-    await fetchy(`/api/posts/${props.post._id}`, "DELETE");
-  } catch {
-    return;
+  if (confirm("Are you sure you want to delete this post?")) {
+    try {
+      await fetchy(`/api/posts/${props.post._id}`, "DELETE");
+    } catch {
+      return;
+    }
+    emit("refreshPosts");
   }
-  emit("refreshPosts");
 };
 </script>
 
@@ -33,7 +34,7 @@ const deletePost = async () => {
       <p v-else>Created on: {{ formatDate(props.post.dateCreated) }}</p>
     </article>
   </div>
-  <CommentListComponent :parent="props.post._id.toString()" :post="props.post" @refreshComments="$emit('refreshComments')" />
+  <CommentListComponent :parent="props.post._id.toString()" :post="props.post" :showBox="false" @refreshComments="$emit('refreshComments')" />
 </template>
 
 <style scoped>

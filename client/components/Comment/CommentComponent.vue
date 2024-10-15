@@ -2,20 +2,28 @@
 import { useUserStore } from "@/stores/user";
 import { formatDate } from "@/utils/formatDate";
 import { storeToRefs } from "pinia";
+import { ref } from "vue";
 import { fetchy } from "../../utils/fetchy";
 import CommentListComponent from "./CommentListComponent.vue";
 
 const props = defineProps(["comment"]);
 const emit = defineEmits(["editComment", "refreshComments", "deleteComment", "createComment"]);
 const { currentUsername } = storeToRefs(useUserStore());
+const showReplyBox = ref(false);
 
 const deleteComment = async () => {
-  try {
-    await fetchy(`/api/comments/${props.comment._id.toString()}`, "DELETE");
-  } catch {
-    return;
+  if (confirm("Are you sure you want to delete this comment?")) {
+    try {
+      await fetchy(`/api/comments/${props.comment._id}`, "DELETE");
+    } catch {
+      return;
+    }
+    emit("refreshComments");
   }
-  emit("refreshComments");
+};
+
+const handleReply = () => {
+  showReplyBox.value = !showReplyBox.value;
 };
 </script>
 
@@ -26,13 +34,14 @@ const deleteComment = async () => {
     <menu>
       <li v-if="props.comment.author == currentUsername"><button class="btn-small pure-button" @click="emit('editComment', props.comment._id)">Edit</button></li>
       <li v-if="props.comment.author == currentUsername"><button class="button-error btn-small pure-button" @click="deleteComment">Delete</button></li>
+      <li><button class="btn-small pure-button" @click="handleReply">Reply</button></li>
     </menu>
     <article class="timestamp">
       <p v-if="props.comment.dateCreated !== props.comment.dateUpdated">Edited on: {{ formatDate(props.comment.dateUpdated) }}</p>
       <p v-else>Created on: {{ formatDate(props.comment.dateCreated) }}</p>
     </article>
   </div>
-  <CommentListComponent :parent="props.comment._id.toString()" :comment="props.comment" @refreshComments="$emit('refreshComments')" />
+  <CommentListComponent :parent="props.comment._id.toString()" :comment="props.comment" :showBox="showReplyBox" @hideReplyBox="handleReply" @refreshComments="$emit('refreshComments')" />
 </template>
 
 <style scoped>
