@@ -169,6 +169,13 @@ class Routes {
     return Responses.groups(groups);
   }
 
+  @Router.get("/groups/unjoined")
+  async getUnjoinedGroups(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    const groups = await Grouping.getCommunities();
+    return Responses.groups(groups.filter((group) => !group.members.map((member) => member.toString()).includes(user.toString())));
+  }
+
   @Router.get("/groups/founder")
   async getGroupsByFounder(founder: string) {
     const founderOid = (await Authing.getUserByUsername(founder))._id;
@@ -176,7 +183,13 @@ class Routes {
     return Responses.groups(groups);
   }
 
-  @Router.get("/groups/:name")
+  @Router.get("/groups/:id")
+  async getGroupById(id: string) {
+    const group = await Grouping.getById(new ObjectId(id));
+    return Responses.group(group);
+  }
+
+  @Router.get("/groups/name/:name")
   async getGroupByName(name: string) {
     return await Grouping.getByName(name);
   }
@@ -198,10 +211,10 @@ class Routes {
   }
 
   @Router.post("/groups/")
-  async createGroup(session: SessionDoc, name: string) {
+  async createGroup(session: SessionDoc, name: string, description?: string) {
     const user = Sessioning.getUser(session);
     const founderOid = new ObjectId(user);
-    const created = await Grouping.create(name, founderOid);
+    const created = await Grouping.create(name, description ?? "", founderOid);
     return { msg: created.msg, group: await Responses.group(created.group) };
   }
 

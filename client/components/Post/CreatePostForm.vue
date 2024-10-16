@@ -12,7 +12,7 @@ const createPost = async (content: string) => {
       body: { content },
     });
     if (props.inCommunity) {
-      const group = await fetchy(`/api/groups/${props.communityName}`, "GET");
+      const group = await fetchy(`/api/groups/name/${props.communityName}`, "GET");
       const groupId = group._id;
       // add content to community
       await fetchy(`/api/groups/${groupId}`, "PATCH", {

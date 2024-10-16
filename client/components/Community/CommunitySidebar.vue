@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useCommunityStore } from "@/stores/community";
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
@@ -6,9 +7,9 @@ import { onBeforeMount, ref, watch } from "vue";
 
 const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
 
-const loaded = ref(false);
-let communities = ref<Array<Record<string, string>>>([]);
+const communityStore = useCommunityStore();
 
+const loaded = ref(false);
 async function getUserCommunities() {
   let communityResults;
   try {
@@ -16,7 +17,7 @@ async function getUserCommunities() {
   } catch (_) {
     return;
   }
-  communities.value = communityResults;
+  communityStore.setCommunities(communityResults);
 }
 
 onBeforeMount(async () => {
@@ -28,17 +29,36 @@ watch(isLoggedIn, async (newVal) => {
   if (newVal) {
     await getUserCommunities();
   } else {
-    communities.value = [];
+    communityStore.setCommunities([]);
   }
 });
+
+watch(
+  () => communityStore.communityCreated,
+  async (newVal) => {
+    if (newVal) {
+      await getUserCommunities();
+      communityStore.setCommunityCreated(false);
+    }
+  },
+);
+watch(
+  () => communityStore.communityDeleted,
+  async (newVal) => {
+    if (newVal) {
+      await getUserCommunities();
+      communityStore.setCommunityDeleted(false);
+    }
+  },
+);
 </script>
 
 <template>
   <div class="Sidebar">
     <h2>Communities</h2>
-    <ul v-if="communities.length !== 0">
-      <li v-for="community in communities" :key="community._id">
-        <RouterLink :to="{ name: 'CommunityView', params: { id: community._id }, query: { name: community.name } }">
+    <ul v-if="communityStore.communities.length !== 0" @createCommunitySuccess="getUserCommunities">
+      <li v-for="community in communityStore.communities" :key="community._id">
+        <RouterLink :to="{ name: 'CommunityView', params: { id: community._id } }" @click="communityStore.setSelectedCommunity(community)">
           <div>{{ community.name }}</div>
         </RouterLink>
       </li>
@@ -46,6 +66,12 @@ watch(isLoggedIn, async (newVal) => {
     <ul v-else-if="loaded">
       No communities found. Join a community now!
     </ul>
+    <RouterLink :to="{ name: 'BrowseCommunities' }">
+      <div>Browse communities</div>
+    </RouterLink>
+    <RouterLink :to="{ name: 'CreateCommunity' }">
+      <div>Create a community</div>
+    </RouterLink>
   </div>
 </template>
 

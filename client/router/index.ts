@@ -2,7 +2,9 @@ import { storeToRefs } from "pinia";
 import { createRouter, createWebHistory } from "vue-router";
 
 import { useUserStore } from "@/stores/user";
+import BrowseCommunitiesView from "../views/BrowseCommunitiesView.vue";
 import CommunityView from "../views/CommunityView.vue";
+import CreateCommunityView from "../views/CreateCommunityView.vue";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
@@ -40,6 +42,18 @@ const router = createRouter({
       component: CommunityView,
       meta: { requiresAuth: true },
       props: (route) => ({ id: route.params.id, name: route.query.name }),
+    },
+    {
+      path: "/community/create",
+      name: "CreateCommunity",
+      component: CreateCommunityView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/community/browse",
+      name: "BrowseCommunities",
+      component: BrowseCommunitiesView,
+      meta: { requiresAuth: true },
     },
     {
       path: "/:catchAll(.*)",

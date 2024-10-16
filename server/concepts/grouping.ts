@@ -5,6 +5,7 @@ import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface GroupingDoc extends BaseDoc {
   name: string;
+  description?: string;
   founder: ObjectId;
   members: ObjectId[];
   content: ObjectId[];
@@ -23,11 +24,11 @@ export default class GroupingConcept {
     this.groups = new DocCollection<GroupingDoc>(collectionName);
   }
 
-  async create(name: string, founder: ObjectId) {
+  async create(name: string, description: string, founder: ObjectId) {
     if (await this.groups.readOne({ name })) {
       throw new NotAllowedError(`Group with name ${name} already exists!`);
     }
-    const _id = await this.groups.createOne({ name, founder, members: [founder], content: [] });
+    const _id = await this.groups.createOne({ name, description, founder, members: [founder], content: [] });
     return { msg: "Group successfully created!", group: await this.groups.readOne({ _id }) };
   }
 
@@ -54,6 +55,10 @@ export default class GroupingConcept {
 
   async getByName(name: string) {
     return await this.groups.readOne({ name });
+  }
+
+  async getById(_id: ObjectId) {
+    return await this.groups.readOne({ _id });
   }
 
   async joinCommunity(user: ObjectId, communityId: ObjectId) {
