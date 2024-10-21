@@ -37,6 +37,12 @@ const router = createRouter({
       },
     },
     {
+      path: "/match",
+      name: "PartnerMatch",
+      component: () => import("../views/MatchingView.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/community/:id",
       name: "CommunityView",
       component: CommunityView,

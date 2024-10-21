@@ -311,11 +311,16 @@ class Routes {
   async getMatchOrStatus(session: SessionDoc) {
     const user = Sessioning.getUser(session);
     const status = await Matching.getUserStatus(user);
-    const other = await Matching.getMatch(user);
-    if (status.status === "matched") {
-      return { msg: "You are matched with " + (await Authing.getUserById(other)).username + "!" };
+    if (status) {
+      if (status.status === "matched") {
+        const other = await Matching.getMatch(user);
+        const otherName = await Authing.getUserById(other);
+        return { msg: "You are matched with " + (await Authing.getUserById(other)).username + "!", match: other, name: otherName.username };
+      } else {
+        return { msg: "You are currently in the matching pool.", userInPool: true };
+      }
     } else {
-      return { msg: "You are currently in the matching pool." };
+      return { msg: "You are not in the matching pool.", userInPool: false };
     }
   }
 
@@ -350,7 +355,7 @@ class Routes {
     return await Matching.removeMatch(user, other);
   }
 
-  @Router.delete("/matches/user")
+  @Router.delete("/matches/request")
   async removeUserFromPool(session: SessionDoc) {
     const user = Sessioning.getUser(session);
     return await Matching.removeUnmatchedUser(user);
@@ -368,7 +373,7 @@ class Routes {
     return await Matching.updateGoal(user, oldGoal, newGoal);
   }
 
-  @Router.delete("/matches/goal")
+  @Router.patch("/matches/goal/remove")
   async removeGoal(session: SessionDoc, goal: string) {
     const user = Sessioning.getUser(session);
     return await Matching.removeGoal(user, goal);

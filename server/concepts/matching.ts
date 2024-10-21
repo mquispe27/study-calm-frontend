@@ -54,9 +54,6 @@ export default class MatchingConcept {
 
   async getUserStatus(user: ObjectId) {
     const status = await this.statuses.readOne({ user });
-    if (!status) {
-      throw new NotFoundError("User does not exist!");
-    }
     return status;
   }
 
@@ -197,7 +194,7 @@ export default class MatchingConcept {
     await this.statuses.partialUpdateOne({ user: user1 }, { status: "matched" });
     await this.statuses.partialUpdateOne({ user: user2 }, { status: "matched" });
     void this.matches.createOne({ user1, user2 });
-    return { msg: user1 + " and " + user2 + " are now matched!" };
+    return { msg: "User is now matched!", match: user2 };
   }
 }
 
