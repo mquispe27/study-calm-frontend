@@ -73,7 +73,9 @@ async function leaveCommunity() {
   <main v-if="!deleted">
     <h1>{{ communityStore.selectedCommunity?.name }}</h1>
     <p>{{ communityStore.selectedCommunity?.description }}</p>
+
     <div className="joinLeaveBar">
+      <RouterLink :to="{ name: 'Events', params: { id: route.params._id } }">Events Board </RouterLink>
       <p>Founder: {{ communityStore.selectedCommunity?.founder }}</p>
       <button @click="handleViewMembersClick">View Members</button>
       <div v-if="viewMembers">{{ communityStore.selectedCommunity?.members }}</div>
@@ -92,5 +94,11 @@ async function leaveCommunity() {
 <style scoped>
 h1 {
   text-align: center;
+}
+
+.joinLeaveBar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
 }
 </style>

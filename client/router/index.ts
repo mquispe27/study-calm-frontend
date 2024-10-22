@@ -5,6 +5,7 @@ import { useUserStore } from "@/stores/user";
 import BrowseCommunitiesView from "../views/BrowseCommunitiesView.vue";
 import CommunityView from "../views/CommunityView.vue";
 import CreateCommunityView from "../views/CreateCommunityView.vue";
+import EventsView from "../views/EventsView.vue";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
@@ -59,6 +60,12 @@ const router = createRouter({
       path: "/community/browse",
       name: "BrowseCommunities",
       component: BrowseCommunitiesView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/community/:id/events",
+      name: "Events",
+      component: EventsView,
       meta: { requiresAuth: true },
     },
     {

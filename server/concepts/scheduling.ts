@@ -56,6 +56,10 @@ export default class SchedulingConcept {
     return await this.events.readMany({}, { sort: { time: 1 } });
   }
 
+  async getEventsByGroup(group: ObjectId) {
+    return await this.events.readMany({ group }, { sort: { time: 1 } });
+  }
+
   async getEvent(_id: ObjectId) {
     await this.assertEventExists(_id);
     return await this.events.readOne({ _id });

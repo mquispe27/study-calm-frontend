@@ -398,6 +398,26 @@ class Routes {
     } else return events;
   }
 
+  @Router.get("/events/group/:id")
+  async getEventsByGroup(id: string) {
+    const group = new ObjectId(id);
+    const events = await Scheduling.getEventsByGroup(group);
+    if (events) {
+      return {
+        events: await Promise.all(
+          events.map(async (event) => {
+            if (event.attendees) {
+              return {
+                ...event,
+                attendees: await Authing.idsToUsernames(event.attendees),
+              };
+            } else return event;
+          }),
+        ),
+      };
+    } else return events;
+  }
+
   @Router.get("/events/:id")
   async getEvent(id: string) {
     const event = await Scheduling.getEvent(new ObjectId(id));
@@ -466,20 +486,6 @@ class Routes {
     }
   }
 
-  @Router.delete("/events/:id/time")
-  async removePossibleTime(session: SessionDoc, id: string, time: string) {
-    const user = Sessioning.getUser(session);
-    await Scheduling.unvoteOnTime(new ObjectId(id), new Date(time), user);
-    const response = await Scheduling.removePossibleTime(new ObjectId(id), new Date(time));
-    const newBestTime = await Scheduling.calculateBestTime(new ObjectId(id));
-    if (newBestTime.bestTime) {
-      await Scheduling.setBestTime(new ObjectId(id), new Date(newBestTime.bestTime));
-      return { response, bestTime: newBestTime.bestTime };
-    } else {
-      return response;
-    }
-  }
-
   @Router.post("/events/:id/time/vote")
   async voteTime(session: SessionDoc, id: string, time: string) {
     const user = Sessioning.getUser(session);
@@ -498,10 +504,24 @@ class Routes {
     }
   }
 
-  @Router.delete("/events/:id/time/vote")
+  @Router.patch("/events/:id/time/vote")
   async unvoteTime(session: SessionDoc, id: string, time: string) {
     const user = Sessioning.getUser(session);
     const response = await Scheduling.unvoteOnTime(new ObjectId(id), new Date(time), user);
+    const newBestTime = await Scheduling.calculateBestTime(new ObjectId(id));
+    if (newBestTime.bestTime) {
+      await Scheduling.setBestTime(new ObjectId(id), new Date(newBestTime.bestTime));
+      return { response, bestTime: newBestTime.bestTime };
+    } else {
+      return response;
+    }
+  }
+
+  @Router.patch("/events/:id/time/remove")
+  async removePossibleTime(session: SessionDoc, id: string, time: string) {
+    const user = Sessioning.getUser(session);
+    await Scheduling.unvoteOnTime(new ObjectId(id), new Date(time), user);
+    const response = await Scheduling.removePossibleTime(new ObjectId(id), new Date(time));
     const newBestTime = await Scheduling.calculateBestTime(new ObjectId(id));
     if (newBestTime.bestTime) {
       await Scheduling.setBestTime(new ObjectId(id), new Date(newBestTime.bestTime));
@@ -548,7 +568,7 @@ class Routes {
     }
   }
 
-  @Router.delete("/events/:id/location/vote")
+  @Router.patch("/events/:id/location/vote")
   async unvoteLocation(session: SessionDoc, id: string, location: string) {
     const user = Sessioning.getUser(session);
     const unvoteMessage = await Scheduling.unvoteOnLocation(new ObjectId(id), location, user);
@@ -561,7 +581,7 @@ class Routes {
     }
   }
 
-  @Router.delete("/events/:id/location")
+  @Router.patch("/events/:id/location/remove")
   async removePossibleLocation(session: SessionDoc, id: string, location: string) {
     const user = Sessioning.getUser(session);
     await Scheduling.unvoteOnLocation(new ObjectId(id), location, user);
