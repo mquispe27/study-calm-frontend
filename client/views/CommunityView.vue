@@ -59,7 +59,7 @@ async function deleteCommunity() {
 async function leaveCommunity() {
   if (confirm("Are you sure you want to leave this community?")) {
     try {
-      await fetchy(`/api/groups/${route.params.id}/leave`, "PATCH");
+      await fetchy(`/api/groups/${route.params.id}/members`, "PATCH", { body: false });
       deleted.value = true;
       communityStore.setCommunityDeleted(true);
     } catch (error) {

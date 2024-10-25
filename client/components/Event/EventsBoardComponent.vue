@@ -69,7 +69,7 @@ async function createEvent() {
 
 async function joinEvent(eventId: string) {
   try {
-    await fetchy(`/api/events/${eventId}/join`, "PATCH");
+    await fetchy(`/api/events/${eventId}/members`, "PATCH", { body: { join: true } });
     await browseEvents();
   } catch (error) {
     console.error("Failed to join event", error);
@@ -78,7 +78,7 @@ async function joinEvent(eventId: string) {
 
 async function leaveEvent(eventId: string) {
   try {
-    await fetchy(`/api/events/${eventId}/leave`, "PATCH");
+    await fetchy(`/api/events/${eventId}/members`, "PATCH", { body: { join: false } });
     await browseEvents();
   } catch (error) {
     console.error("Failed to leave event", error);
@@ -154,7 +154,7 @@ async function unvoteTime(eventId: string, time: string) {
 
 async function removeTime(eventId: string, time: string) {
   try {
-    await fetchy(`/api/events/${eventId}/time/remove`, "PATCH", { body: { time } });
+    await fetchy(`/api/events/${eventId}/time`, "PATCH", { body: { time } });
     await browseEvents();
     await getUserVotes(eventId);
     await fetchAllVotes();
@@ -199,7 +199,7 @@ async function unvoteLocation(eventId: string, location: string) {
 
 async function removeLocation(eventId: string, location: string) {
   try {
-    await fetchy(`/api/events/${eventId}/location/remove`, "PATCH", { body: { location } });
+    await fetchy(`/api/events/${eventId}/location`, "PATCH", { body: { location } });
     await browseEvents();
     await getUserVotes(eventId);
     await fetchAllVotes();
@@ -259,11 +259,15 @@ watch(selectedCommunity, async (newCommunity) => {
           </div>
           <div v-else>
             <h3>{{ event.name }}</h3>
-            <button class="btn-small pure-button" @click="startEdit(event._id, event.name)">Edit Name</button>
-            <button class="btn-small pure-button button-error" @click="deleteEvent(event._id)">Delete</button>
           </div>
           <div v-if="event.attendees.includes(currentUsername)">
-            <button class="pure-button button-error" @click="leaveEvent(event._id)">Leave</button>
+            <div v-if="event.creator.username === currentUsername">
+              <button class="btn-small pure-button" @click="startEdit(event._id, event.name)">Edit Name</button>
+              <button class="pure-button pure-button-primary" @click="deleteEvent(event._id)">Delete</button>
+            </div>
+            <div v-else>
+              <button class="pure-button button-error" @click="leaveEvent(event._id)">Leave</button>
+            </div>
           </div>
           <div v-else>
             <button class="pure-button pure-button-primary" @click="joinEvent(event._id)">Join</button>
@@ -271,7 +275,11 @@ watch(selectedCommunity, async (newCommunity) => {
         </div>
         <p>Time: {{ new Date(event.time).toLocaleString() }}</p>
         <p>Location: {{ event.location }}</p>
-        <p>Attendees: {{ event.attendees.join(", ") || "None" }}</p>
+        <div>
+          <p v-if="event.creator.username == currentUsername">Attendees: {{ event.attendees.join(", ") || "None" }}</p>
+          <p v-else>Number of Attendees: {{ event.attendees.length }}</p>
+        </div>
+        <p>(Only creator can view attendee list.)</p>
         <div v-if="event.attendees.includes(currentUsername)">
           <div>
             <h4>Suggested Times</h4>
@@ -285,7 +293,7 @@ watch(selectedCommunity, async (newCommunity) => {
                 <div v-else>
                   <button class="btn-small pure-button" @click="voteTime(event._id, time)">Vote</button>
                 </div>
-                <button class="pure-button button-error" @click="removeTime(event._id, time)">Remove</button>
+                <button v-if="event.creator.username == currentUsername" class="pure-button button-error" @click="removeTime(event._id, time)">Remove</button>
               </li>
             </ul>
             <input v-model="newTime" type="datetime-local" placeholder="Suggest a new time" />
@@ -302,7 +310,7 @@ watch(selectedCommunity, async (newCommunity) => {
                 <div v-else>
                   <button class="btn-small pure-button" @click="voteLocation(event._id, location)">Vote</button>
                 </div>
-                <button class="pure-button button-error" @click="removeLocation(event._id, location)">Remove</button>
+                <button v-if="event.creator.username == currentUsername" class="pure-button button-error" @click="removeLocation(event._id, location)">Remove</button>
               </li>
             </ul>
             <input v-model="newLocation" placeholder="Suggest a new location" />
@@ -312,13 +320,13 @@ watch(selectedCommunity, async (newCommunity) => {
       </article>
     </section>
     <p v-else>No events available to join. Stay tuned!</p>
-    <div>
+    <form @submit.prevent="createEvent">
       <h3>Create Event</h3>
-      <input v-model="newEventName" placeholder="Event Name" />
-      <input v-model="newEventTime" type="datetime-local" placeholder="Event Time" />
-      <input v-model="newEventLocation" placeholder="Event Location" />
-      <button class="pure-button pure-button-primary" @click="createEvent">Create Event</button>
-    </div>
+      <input v-model="newEventName" placeholder="Event Name" required />
+      <input v-model="newEventTime" type="datetime-local" placeholder="Event Time" required />
+      <input v-model="newEventLocation" placeholder="Event Location" required />
+      <button type="submit" class="pure-button pure-button-primary">Create Event</button>
+    </form>
   </div>
   <p v-else>Loading...</p>
 </template>

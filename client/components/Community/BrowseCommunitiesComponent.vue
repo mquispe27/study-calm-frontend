@@ -24,7 +24,7 @@ async function browseCommunities() {
 
 async function joinCommunity(community: string) {
   try {
-    await fetchy(`/api/groups/${community}/join`, "PATCH");
+    await fetchy(`/api/groups/${community}/members`, "PATCH", { body: { join: true } });
     await browseCommunities();
     communityStore.setCommunityCreated(true);
   } catch (error) {

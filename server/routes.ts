@@ -232,18 +232,11 @@ class Routes {
     return await Grouping.removeContent(user, groupOid, contentId);
   }
 
-  @Router.patch("/groups/:id/join")
-  async joinGroup(session: SessionDoc, id: string) {
+  @Router.patch("/groups/:id/members")
+  async joinOrLeaveGroup(session: SessionDoc, id: string, join: boolean) {
     const user = Sessioning.getUser(session);
     const groupOid = new ObjectId(id);
-    return await Grouping.joinCommunity(user, groupOid);
-  }
-
-  @Router.patch("/groups/:id/leave")
-  async leaveGroup(session: SessionDoc, id: string) {
-    const user = Sessioning.getUser(session);
-    const groupOid = new ObjectId(id);
-    return await Grouping.leaveCommunity(user, groupOid);
+    return join ? await Grouping.joinCommunity(user, groupOid) : await Grouping.leaveCommunity(user, groupOid);
   }
 
   @Router.delete("/groups/:id")
@@ -389,9 +382,11 @@ class Routes {
             if (event.attendees) {
               return {
                 ...event,
+                creator: await Authing.getUserById(event.creator),
                 attendees: await Authing.idsToUsernames(event.attendees),
               };
-            } else return event;
+            } else if (event) return { ...event, creator: await Authing.getUserById(event.creator) };
+            else return event;
           }),
         ),
       };
@@ -409,9 +404,11 @@ class Routes {
             if (event.attendees) {
               return {
                 ...event,
+                creator: await Authing.getUserById(event.creator),
                 attendees: await Authing.idsToUsernames(event.attendees),
               };
-            } else return event;
+            } else if (event) return { ...event, creator: await Authing.getUserById(event.creator) };
+            else return event;
           }),
         ),
       };
@@ -424,9 +421,11 @@ class Routes {
     if (event?.attendees) {
       return {
         ...event,
+        creator: await Authing.getUserById(event.creator),
         attendees: await Authing.idsToUsernames(event.attendees),
       };
-    } else return event;
+    } else if (event) return { ...event, creator: await Authing.getUserById(event.creator) };
+    else return event;
   }
 
   @Router.post("/events")
@@ -436,30 +435,33 @@ class Routes {
     return await Scheduling.createEvent(user, eventName, groupId, new Date(time), location);
   }
 
-  @Router.patch("/events/:id/join")
-  async joinEvent(session: SessionDoc, id: string) {
+  @Router.patch("/events/:id/members")
+  async joinOrLeaveEvent(session: SessionDoc, id: string, join: boolean) {
     const user = Sessioning.getUser(session);
-    return await Scheduling.addAttendee(new ObjectId(id), user);
-  }
-
-  @Router.patch("/events/:id/leave")
-  async leaveEvent(session: SessionDoc, id: string) {
-    const user = Sessioning.getUser(session);
-    const timeVote = await Scheduling.getUserTimeVote(new ObjectId(id), user);
-    // clear user's votes before removing them from the event
-    if (timeVote) {
-      await Scheduling.unvoteOnTime(new ObjectId(id), new Date(timeVote), user);
+    if (join) return await Scheduling.addAttendee(new ObjectId(id), user);
+    else {
+      const timeVote = await Scheduling.getUserTimeVote(new ObjectId(id), user);
+      // clear user's votes before removing them from the event
+      if (timeVote) {
+        await Scheduling.unvoteOnTime(new ObjectId(id), new Date(timeVote), user);
+      }
+      const locationVote = await Scheduling.getUserLocationVote(new ObjectId(id), user);
+      if (locationVote) {
+        await Scheduling.unvoteOnLocation(new ObjectId(id), locationVote, user);
+      }
+      return await Scheduling.removeAttendee(new ObjectId(id), user);
     }
-    const locationVote = await Scheduling.getUserLocationVote(new ObjectId(id), user);
-    if (locationVote) {
-      await Scheduling.unvoteOnLocation(new ObjectId(id), locationVote, user);
-    }
-    return await Scheduling.removeAttendee(new ObjectId(id), user);
   }
 
   @Router.delete("/events/:id")
   async deleteEvent(session: SessionDoc, id: string) {
-    return await Scheduling.deleteEvent(new ObjectId(id));
+    const user = Sessioning.getUser(session);
+    const event = await Scheduling.getEvent(new ObjectId(id));
+    if (user.toString() !== event?.creator.toString()) {
+      return await Scheduling.deleteEvent(new ObjectId(id));
+    } else {
+      return { msg: "Can only delete events you created!" };
+    }
   }
 
   @Router.patch("/events/:id/name")
@@ -517,7 +519,7 @@ class Routes {
     }
   }
 
-  @Router.patch("/events/:id/time/remove")
+  @Router.patch("/events/:id/time")
   async removePossibleTime(session: SessionDoc, id: string, time: string) {
     const user = Sessioning.getUser(session);
     await Scheduling.unvoteOnTime(new ObjectId(id), new Date(time), user);
@@ -581,7 +583,7 @@ class Routes {
     }
   }
 
-  @Router.patch("/events/:id/location/remove")
+  @Router.patch("/events/:id/location")
   async removePossibleLocation(session: SessionDoc, id: string, location: string) {
     const user = Sessioning.getUser(session);
     await Scheduling.unvoteOnLocation(new ObjectId(id), location, user);
