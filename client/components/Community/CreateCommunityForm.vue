@@ -39,7 +39,7 @@ const emptyForm = () => {
     <label for="content">Create a new community!</label>
     <input type="text" id="name" v-model="name" placeholder="Name" required />
     <textarea id="description" v-model="description" placeholder="A snazzy description" required> </textarea>
-    <button type="submit" class="pure-button-primary pure-button">Create</button>
+    <button type="submit" class="pure-button-primary">Create</button>
   </form>
   <div v-else>
     <h2>Community created!</h2>

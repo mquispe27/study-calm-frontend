@@ -71,18 +71,20 @@ async function leaveCommunity() {
 
 <template>
   <main v-if="!deleted">
-    <h1>{{ communityStore.selectedCommunity?.name }}</h1>
-    <p>{{ communityStore.selectedCommunity?.description }}</p>
+    <div class="headings">
+      <h1>{{ communityStore.selectedCommunity?.name }}</h1>
+      <p>{{ communityStore.selectedCommunity?.description }}</p>
+    </div>
 
     <div className="joinLeaveBar">
       <RouterLink :to="{ name: 'Events', params: { id: route.params._id } }">Events Board </RouterLink>
       <p>Founder: {{ communityStore.selectedCommunity?.founder }}</p>
       <button @click="handleViewMembersClick">View Members</button>
-      <div v-if="viewMembers">{{ communityStore.selectedCommunity?.members }}</div>
+      <div v-if="viewMembers">{{ communityStore.selectedCommunity?.members.join(", ") || "None" }}</div>
       <div v-if="currentUsername == (communityStore.selectedCommunity?.founder ?? '')">
         <button @click="deleteCommunity">Delete Community</button>
       </div>
-      <div v-else><button @click="leaveCommunity">Leave Community</button></div>
+      <div v-else><button class="button-error" @click="leaveCommunity">Leave Community</button></div>
     </div>
     <div v-if="!loading">
       <CommunityPostListComponent :key="communityStore.selectedCommunity?._id" :community="communityStore.selectedCommunity?._id ?? ''" :name="communityStore.selectedCommunity?.name ?? ''" />
@@ -98,7 +100,19 @@ h1 {
 
 .joinLeaveBar {
   display: flex;
+  flex-direction: column;
   justify-content: space-around;
+  gap: 1rem;
+  align-items: center;
+}
+
+button {
+  cursor: pointer;
+}
+
+.headings {
+  display: flex;
+  flex-direction: column;
   align-items: center;
 }
 </style>

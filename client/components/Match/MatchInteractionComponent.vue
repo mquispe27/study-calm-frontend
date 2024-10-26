@@ -124,25 +124,25 @@ onMounted(async () => {
         <li v-for="goal in userGoals" :key="goal">
           <div v-if="editingGoal === goal">
             <input v-model="newGoalValue" placeholder="Edit goal" />
-            <button class="btn-small pure-button-primary pure-button" @click="editGoal(goal)">Save</button>
-            <button class="btn-small pure-button" @click="cancelEdit">Cancel</button>
+            <button class="btn-small pure-button-primary" @click="editGoal(goal)">Save</button>
+            <button class="btn-small" @click="cancelEdit">Cancel</button>
           </div>
           <div v-else>
             {{ goal }}
-            <button class="btn-small pure-button" @click="startEditGoal(goal)">Edit</button>
-            <button class="btn-small pure-button-primary pure-button button-error" @click="deleteGoal(goal)">Delete</button>
+            <button class="btn-small" @click="startEditGoal(goal)">Edit</button>
+            <button class="btn-small pure-button-primary button-error" @click="deleteGoal(goal)">Delete</button>
           </div>
         </li>
       </ul>
       <textarea v-model="newGoal" placeholder="Add a new goal, hope, dream, or wish your partner well!"></textarea>
-      <button class="pure-button-primary pure-button" @click="addGoal(newGoal)">Add Goal</button>
+      <button class="pure-button-primary" @click="addGoal(newGoal)">Add Goal</button>
       <h2>Partner's Goals</h2>
       <p v-if="partnerGoals.length === 0">Your partner has not set any goals yet. Encourage them to add some!</p>
       <ul>
         <li v-for="goal in partnerGoals" :key="goal">{{ goal }}</li>
       </ul>
       <p>Not happy?</p>
-      <button type="submit" class="pure-button button-error" @click="terminateMatch">Terminate Match</button>
+      <button type="submit" class="button-error" @click="terminateMatch">Terminate Match</button>
     </div>
   </div>
 </template>

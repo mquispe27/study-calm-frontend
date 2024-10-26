@@ -195,13 +195,17 @@ class Routes {
   }
 
   @Router.get("/groups/:id/content")
-  async getGroupContent(id: string) {
+  async getGroupContent(id: string, author?: string) {
     const groupOid = new ObjectId(id);
     const allContent = await Grouping.getAllContent(groupOid);
 
     if (allContent) {
       const posts = await Promise.all(allContent.content.map((content) => Posting.getById(new ObjectId(content))));
       const filteredPosts = posts.filter((post) => post !== null);
+      if (filteredPosts && author) {
+        const authorOid = (await Authing.getUserByUsername(author))._id;
+        return Responses.posts(filteredPosts.filter((post) => post.author.toString() === authorOid.toString()));
+      }
       if (posts) {
         return Responses.posts(filteredPosts);
       }

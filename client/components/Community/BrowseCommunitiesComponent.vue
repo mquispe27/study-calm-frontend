@@ -47,14 +47,14 @@ onBeforeMount(async () => {
       <article v-for="community in communities" :key="community._id">
         <div class="row">
           <h3>{{ community.name }}</h3>
-          <h3>{{ community.members.length }} members</h3>
-          <h3>{{ community.content.length }} posts</h3>
+          <p>{{ community.description }}</p>
+          <h3>Members: {{ community.members.length }}</h3>
+          <h3>Posts: {{ community.content.length }}</h3>
           <button @click="joinCommunity(community._id)">Join</button>
         </div>
-        <p>{{ community.description }}</p>
       </article>
     </section>
-    <p v-else>No communities available to join. Stay tuned!</p>
+    <p v-else>No communities available to join. Stay tuned! Or create one yourself!</p>
   </div>
   <p v-else>Loading...</p>
 </template>

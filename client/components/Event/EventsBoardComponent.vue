@@ -254,7 +254,7 @@ watch(selectedCommunity, async (newCommunity) => {
         <div class="row">
           <div v-if="editingEvent === event._id">
             <input v-model="newEventNameEdit" placeholder="Edit event name" />
-            <button @click="saveEventNameEdit(event._id)">Save</button>
+            <button class="pure-button-primary" @click="saveEventNameEdit(event._id)">Save</button>
             <button @click="cancelEdit">Cancel</button>
           </div>
           <div v-else>
@@ -262,24 +262,26 @@ watch(selectedCommunity, async (newCommunity) => {
           </div>
           <div v-if="event.attendees.includes(currentUsername)">
             <div v-if="event.creator.username === currentUsername">
-              <button class="btn-small pure-button" @click="startEdit(event._id, event.name)">Edit Name</button>
-              <button class="pure-button pure-button-primary" @click="deleteEvent(event._id)">Delete</button>
+              <button @click="startEdit(event._id, event.name)">Edit Name</button>
+              <button class="pure-button-primary button-error" @click="deleteEvent(event._id)">Delete</button>
             </div>
             <div v-else>
-              <button class="pure-button button-error" @click="leaveEvent(event._id)">Leave</button>
+              <button class="button-error" @click="leaveEvent(event._id)">Leave</button>
             </div>
           </div>
           <div v-else>
-            <button class="pure-button pure-button-primary" @click="joinEvent(event._id)">Join</button>
+            <button class="pure-button-primary" @click="joinEvent(event._id)">Join</button>
           </div>
         </div>
         <p>Time: {{ new Date(event.time).toLocaleString() }}</p>
         <p>Location: {{ event.location }}</p>
         <div>
           <p v-if="event.creator.username == currentUsername">Attendees: {{ event.attendees.join(", ") || "None" }}</p>
-          <p v-else>Number of Attendees: {{ event.attendees.length }}</p>
+          <div v-else>
+            <p>Number of Attendees: {{ event.attendees.length }}</p>
+            <p>(Only creator can view attendee list.)</p>
+          </div>
         </div>
-        <p>(Only creator can view attendee list.)</p>
         <div v-if="event.attendees.includes(currentUsername)">
           <div>
             <h4>Suggested Times</h4>
@@ -287,34 +289,38 @@ watch(selectedCommunity, async (newCommunity) => {
               <li v-for="time in event.possibleTimes" :key="time">
                 {{ new Date(time).toLocaleString() }}
                 (Votes: {{ voteCounts[event._id]?.times[new Date(time).toString()]?.length || 0 }})
-                <div v-if="new Date(userVotes[event._id]?.time).toLocaleString() === new Date(time).toLocaleString()">
-                  <button class="btn-small pure-button" @click="unvoteTime(event._id, time)">Unvote</button>
+                <div class="voteRemovePane">
+                  <div v-if="new Date(userVotes[event._id]?.time).toLocaleString() === new Date(time).toLocaleString()">
+                    <button class="btn-small" @click="unvoteTime(event._id, time)">Unvote</button>
+                  </div>
+                  <div v-else>
+                    <button class="btn-small" @click="voteTime(event._id, time)">Vote</button>
+                  </div>
+                  <button v-if="event.creator.username == currentUsername" class="btn-small button-error" @click="removeTime(event._id, time)">Remove</button>
                 </div>
-                <div v-else>
-                  <button class="btn-small pure-button" @click="voteTime(event._id, time)">Vote</button>
-                </div>
-                <button v-if="event.creator.username == currentUsername" class="pure-button button-error" @click="removeTime(event._id, time)">Remove</button>
               </li>
             </ul>
             <input v-model="newTime" type="datetime-local" placeholder="Suggest a new time" />
-            <button class="pure-button pure-button-primary" @click="suggestTime(event._id)">Suggest Time</button>
+            <button class="pure-button-primary" @click="suggestTime(event._id)">Suggest Time</button>
           </div>
           <div>
             <h4>Suggested Locations</h4>
             <ul>
               <li v-for="location in event.possibleLocations" :key="location">
                 {{ location }} (Votes: {{ voteCounts[event._id]?.locations[location]?.length || 0 }})
-                <div v-if="userVotes[event._id]?.location === location">
-                  <button class="btn-small pure-button" @click="unvoteLocation(event._id, location)">Unvote</button>
+                <div class="voteRemovePane">
+                  <div v-if="userVotes[event._id]?.location === location">
+                    <button class="btn-small" @click="unvoteLocation(event._id, location)">Unvote</button>
+                  </div>
+                  <div v-else>
+                    <button class="btn-small" @click="voteLocation(event._id, location)">Vote</button>
+                  </div>
+                  <button v-if="event.creator.username == currentUsername" class="btn-small button-error" @click="removeLocation(event._id, location)">Remove</button>
                 </div>
-                <div v-else>
-                  <button class="btn-small pure-button" @click="voteLocation(event._id, location)">Vote</button>
-                </div>
-                <button v-if="event.creator.username == currentUsername" class="pure-button button-error" @click="removeLocation(event._id, location)">Remove</button>
               </li>
             </ul>
             <input v-model="newLocation" placeholder="Suggest a new location" />
-            <button class="pure-button pure-button-primary" @click="suggestLocation(event._id)">Suggest Location</button>
+            <button class="pure-button-primary" @click="suggestLocation(event._id)">Suggest Location</button>
           </div>
         </div>
       </article>
@@ -325,7 +331,7 @@ watch(selectedCommunity, async (newCommunity) => {
       <input v-model="newEventName" placeholder="Event Name" required />
       <input v-model="newEventTime" type="datetime-local" placeholder="Event Time" required />
       <input v-model="newEventLocation" placeholder="Event Location" required />
-      <button type="submit" class="pure-button pure-button-primary">Create Event</button>
+      <button type="submit" class="pure-button-primary">Create Event</button>
     </form>
   </div>
   <p v-else>Loading...</p>
@@ -365,7 +371,22 @@ article {
   align-items: center;
 }
 
-button {
+/* button {
   margin-left: 10px;
+} */
+
+form {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.voteRemovePane {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 </style>

@@ -19,12 +19,16 @@ let searchAuthor = ref("");
 async function getPostsByCommunity(community: string, author?: string) {
   let postResults;
   try {
-    postResults = await fetchy(`/api/groups/${community}/content`, "GET");
+    postResults = author ? await fetchy(`/api/groups/${community}/content`, "GET", { query: { author } }) : await fetchy(`/api/groups/${community}/content`, "GET");
   } catch (_) {
     return;
   }
   searchAuthor.value = author ? author : "";
   posts.value = postResults;
+}
+
+async function getPostsInCommunityByAuthor(author: string) {
+  await getPostsByCommunity(props.community, author);
 }
 
 function updateEditing(id: string) {
@@ -45,7 +49,7 @@ onBeforeMount(async () => {
   <div class="row">
     <h2 v-if="!searchAuthor">Posts:</h2>
     <h2 v-else>Posts by {{ searchAuthor }}:</h2>
-    <SearchPostForm @getPostsByAuthor="getPostsByCommunity(props.community)" />
+    <SearchPostForm @getPostsByAuthor="getPostsInCommunityByAuthor" />
   </div>
   <section class="posts" v-if="loaded && posts.length !== 0">
     <article v-for="post in posts" :key="post._id">

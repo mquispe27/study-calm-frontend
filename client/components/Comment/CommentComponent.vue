@@ -32,9 +32,9 @@ const handleReply = () => {
   <p>{{ props.comment.content }}</p>
   <div class="base">
     <menu>
-      <li v-if="props.comment.author == currentUsername"><button class="btn-small pure-button" @click="emit('editComment', props.comment._id)">Edit</button></li>
-      <li v-if="props.comment.author == currentUsername"><button class="button-error btn-small pure-button" @click="deleteComment">Delete</button></li>
-      <li><button class="btn-small pure-button" @click="handleReply">Reply</button></li>
+      <li v-if="props.comment.author == currentUsername"><button class="btn-small" @click="emit('editComment', props.comment._id)">Edit</button></li>
+      <li v-if="props.comment.author == currentUsername"><button class="button-error btn-small" @click="deleteComment">Delete</button></li>
+      <li><button class="btn-small" @click="handleReply">Reply</button></li>
     </menu>
     <article class="timestamp">
       <p v-if="props.comment.dateCreated !== props.comment.dateUpdated">Edited on: {{ formatDate(props.comment.dateUpdated) }}</p>

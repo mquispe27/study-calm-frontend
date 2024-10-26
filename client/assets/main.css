@@ -1,8 +1,165 @@
-/* Add some global styles here! */
+/* Add some global styles here!
 
 :root {
   --red: rgb(208, 67, 12);
   --base-bg: #f1f3f5;
+}
+
+button.btn-small {
+  font-size: 80%;
+} */
+
+button.button-error {
+  color: white;
+  background: var(--red);
+}
+
+a.button {
+  color: #212529;
+  background-color: #f1f3f5;
+  border: 1px solid #dee2e6;
+  /* border-radius: 0.25em; */
+  padding: 0.375em 0.75em;
+  text-decoration: none;
+}
+
+/* .column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1em;
+} */
+
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;600;800&display=swap");
+
+:root {
+  --red: rgb(208, 67, 12);
+  --dark-color: #663f46;
+  --base-bg: #e8f7ee;
+  --main-accent: #c9d6ea;
+  --primary-color: #3c362a;
+  --secondary-color: #b8c4bb;
+  --text-color: #3c362a;
+  --background-color: #e8f7ee;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  font-family:
+    "Nunito",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  background-color: var(--base-bg);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--primary-color);
+}
+
+button {
+  font-family: inherit;
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--primary-color);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--secondary-color);
+}
+
+button.btn-small {
+  padding: 0.3em 0.6em;
+}
+
+button.button-error {
+  background-color: var(--red);
+}
+
+button.button-error:hover {
+  background-color: darken(var(--red), 10%);
+}
+
+input,
+textarea {
+  font-family: inherit;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 1em;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1em;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1em;
+}
+
+.card {
+  background-color: var(--background-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 1em;
+  margin-bottom: 1em;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 0.5em;
+}
+
+.main-layout {
+  display: flex;
+  min-height: 90vh;
+}
+
+.sidebar {
+  flex: 0 0 250px;
+  background-color: var(--background-color);
+  padding: 1em;
+  box-shadow: var(--box-shadow);
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+/* body {
+  font-family:
+    "Nunito",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 button.btn-small {
@@ -12,6 +169,11 @@ button.btn-small {
 button.button-error {
   color: white;
   background: var(--red);
+}
+
+a {
+  color: black;
+  text-decoration: none;
 }
 
 a.button {
@@ -30,3 +192,32 @@ a.button {
   align-items: center;
   gap: 1em;
 }
+
+.main-button {
+  background-color: var(--main-accent);
+  border: 2px solid #000000;
+  width: max-content;
+  padding: 0.5em 1em;
+  border-radius: 4px;
+  font-size: 1.2em;
+  transition: 0.2s;
+}
+  */
+
+/* .main-page-heading {
+  padding-top: 1em;
+  margin-bottom: 0;
+  text-align: center;
+  font-size: 3em;
+} */
+/*
+
+.main-button:hover {
+  background-color: #f4d35e;
+}
+
+/* for debugging */
+
+/* .border {
+  border: 2px solid #39ff14;
+} */

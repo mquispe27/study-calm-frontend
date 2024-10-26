@@ -27,7 +27,7 @@ async function updatePassword() {
     <fieldset>
       <legend>Change your username</legend>
       <input type="text" placeholder="New username" v-model="username" required />
-      <button type="submit" class="pure-button pure-button-primary">Update username</button>
+      <button type="submit" class="pure-button-primary">Update username</button>
     </fieldset>
   </form>
 
@@ -36,7 +36,21 @@ async function updatePassword() {
       <legend>Change your password</legend>
       <input type="password" placeholder="Old password" v-model="currentPassword" required />
       <input type="password" placeholder="New password" v-model="newPassword" required />
-      <button type="submit" class="pure-button pure-button-primary">Update password</button>
+      <button type="submit" class="pure-button-primary">Update password</button>
     </fieldset>
   </form>
 </template>
+
+<style scoped>
+h2 {
+  text-align: center;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  padding: 1em;
+  border-radius: 1em;
+  background-color: var(--base-bg);
+}
+</style>

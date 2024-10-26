@@ -33,16 +33,16 @@ onBeforeMount(async () => {
       </div>
       <ul>
         <li>
-          <RouterLink :to="{ name: 'Home' }" :class="{ underline: currentRouteName == 'Home' }"> Home </RouterLink>
+          <RouterLink class="nav-h" :to="{ name: 'Home' }" :class="{ underline: currentRouteName == 'Home' }"> Home </RouterLink>
         </li>
         <li v-if="isLoggedIn">
-          <RouterLink :to="{ name: 'Settings' }" :class="{ underline: currentRouteName == 'Settings' }"> Settings </RouterLink>
+          <RouterLink class="nav-h" :to="{ name: 'Settings' }" :class="{ underline: currentRouteName == 'Settings' }"> Settings </RouterLink>
         </li>
         <li v-else>
-          <RouterLink :to="{ name: 'Login' }" :class="{ underline: currentRouteName == 'Login' }"> Login </RouterLink>
+          <RouterLink class="nav-h" :to="{ name: 'Login' }" :class="{ underline: currentRouteName == 'Login' }"> Login </RouterLink>
         </li>
         <li v-if="isLoggedIn">
-          <RouterLink :to="{ name: 'PartnerMatch' }" :class="{ underline: currentRouteName == 'PartnerMatch' }"> Partner Match </RouterLink>
+          <RouterLink class="nav-h" :to="{ name: 'PartnerMatch' }" :class="{ underline: currentRouteName == 'PartnerMatch' }"> Partner Match</RouterLink>
         </li>
       </ul>
     </nav>
@@ -50,11 +50,13 @@ onBeforeMount(async () => {
       <p>{{ toast.message }}</p>
     </article>
   </header>
-  <div class="main-content">
+  <div class="main-layout">
     <div class="sidebar">
       <CommunitySidebar />
     </div>
-    <RouterView />
+    <div class="content">
+      <RouterView />
+    </div>
   </div>
 </template>
 
@@ -63,7 +65,7 @@ onBeforeMount(async () => {
 
 nav {
   padding: 1em 2em;
-  background-color: lightgray;
+  background-color: #663f46;
   display: flex;
   align-items: center;
 }
@@ -71,6 +73,11 @@ nav {
 h1 {
   font-size: 2em;
   margin: 0;
+  color: white;
+}
+
+.nav-h {
+  color: white;
 }
 
 .title {
@@ -102,18 +109,18 @@ ul {
   text-decoration: underline;
 }
 
-.main-content {
+/* .main-content {
   display: flex;
   justify-content: flex-start;
 }
 
 .main-content > * {
   flex: 1;
-}
+} */
 
 .sidebar {
   flex: 0 0 250px;
-  background-color: #e0e0e0; /* Grayer color */
+  background-color: var(--secondary-color);
   padding: 20px;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }

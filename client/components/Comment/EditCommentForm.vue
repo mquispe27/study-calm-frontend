@@ -24,8 +24,8 @@ const editComment = async (content: string) => {
     <textarea id="content" v-model="content" placeholder="Edit your comment!" required> </textarea>
     <div class="base">
       <menu>
-        <li><button class="btn-small pure-button-primary pure-button" type="submit">Save</button></li>
-        <li><button class="btn-small pure-button" @click="emit('editComment')">Cancel</button></li>
+        <li><button class="btn-small pure-button-primary" type="submit">Save</button></li>
+        <li><button class="btn-small" @click="emit('editComment')">Cancel</button></li>
       </menu>
       <p v-if="props.comment.dateCreated !== props.comment.dateUpdated" class="timestamp">Edited on: {{ formatDate(props.comment.dateUpdated) }}</p>
       <p v-else class="timestamp">Created on: {{ formatDate(props.comment.dateCreated) }}</p>
