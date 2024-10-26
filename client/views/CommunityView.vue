@@ -82,7 +82,7 @@ async function leaveCommunity() {
       <button @click="handleViewMembersClick">View Members</button>
       <div v-if="viewMembers">{{ communityStore.selectedCommunity?.members.join(", ") || "None" }}</div>
       <div v-if="currentUsername == (communityStore.selectedCommunity?.founder ?? '')">
-        <button @click="deleteCommunity">Delete Community</button>
+        <button class="button-error" @click="deleteCommunity">Delete Community</button>
       </div>
       <div v-else><button class="button-error" @click="leaveCommunity">Leave Community</button></div>
     </div>
