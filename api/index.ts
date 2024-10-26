@@ -33,7 +33,7 @@ if (!fs.existsSync(finalUploadsDir)) {
 app.post("/api/upload", upload.single("image"), (req, res) => {
   const file = req.file;
   if (!file) {
-    return res.status(400).send("No file uploaded.");
+    return res.status(400).json({ error: "No file uploaded." });
   }
 
   const fileName = `${uuidv4()}${path.extname(file.originalname)}`;
@@ -42,7 +42,7 @@ app.post("/api/upload", upload.single("image"), (req, res) => {
   // Move the file to the desired location
   fs.rename(file.path, filePath, (err: any) => {
     if (err) {
-      return res.status(500).send("Error saving file.");
+      return res.status(500).json({ error: "Error saving file." });
     }
     res.json({ imageUrl: `/uploads/${fileName}` });
   });
