@@ -2,10 +2,7 @@
 
 */
 
-button.button-error {
-  color: white;
-  background: var(--red);
-}
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;600;800&display=swap");
 
 a.button {
   color: #212529;
@@ -16,10 +13,9 @@ a.button {
   text-decoration: none;
 }
 
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;600;800&display=swap");
-
 :root {
   --red: rgb(208, 67, 12);
+  --red-dark: rgb(187, 60, 10); /* Manually specify the darker color */
   --dark-color: #663f46;
   --base-bg: #e8f7ee;
   --main-accent: #c9d6ea;
@@ -73,11 +69,12 @@ button.btn-small {
 }
 
 button.button-error {
+  color: white;
   background-color: var(--red);
 }
 
 button.button-error:hover {
-  background-color: darken(var(--red), 10%);
+  background-color: var(--red-dark); /* Use the manually specified darker color */
 }
 
 input,

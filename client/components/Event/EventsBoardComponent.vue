@@ -80,6 +80,7 @@ async function leaveEvent(eventId: string) {
   try {
     await fetchy(`/api/events/${eventId}/members`, "PATCH", { body: { join: false } });
     await browseEvents();
+    userVotes.value[eventId] = null;
   } catch (error) {
     console.error("Failed to leave event", error);
   }
@@ -89,6 +90,7 @@ async function deleteEvent(eventId: string) {
   if (!confirm("Are you sure you want to delete this event?")) return;
   try {
     await fetchy(`/api/events/${eventId}`, "DELETE");
+    userVotes.value[eventId] = null;
     await browseEvents();
   } catch (error) {
     console.error("Failed to delete event", error);
