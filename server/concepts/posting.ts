@@ -10,7 +10,6 @@ export interface PostOptions {
 export interface PostDoc extends BaseDoc {
   author: ObjectId;
   content: string;
-  imageUrl?: string;
   options?: PostOptions;
 }
 
@@ -27,8 +26,8 @@ export default class PostingConcept {
     this.posts = new DocCollection<PostDoc>(collectionName);
   }
 
-  async create(author: ObjectId, content: string, imageUrl?: string, options?: PostOptions) {
-    const _id = await this.posts.createOne({ author, content, imageUrl, options });
+  async create(author: ObjectId, content: string, options?: PostOptions) {
+    const _id = await this.posts.createOne({ author, content, options });
     return { msg: "Post successfully created!", post: await this.posts.readOne({ _id }) };
   }
 
