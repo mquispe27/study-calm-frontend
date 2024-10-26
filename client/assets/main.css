@@ -1,13 +1,6 @@
 /* Add some global styles here!
 
-:root {
-  --red: rgb(208, 67, 12);
-  --base-bg: #f1f3f5;
-}
-
-button.btn-small {
-  font-size: 80%;
-} */
+*/
 
 button.button-error {
   color: white;
@@ -22,14 +15,6 @@ a.button {
   padding: 0.375em 0.75em;
   text-decoration: none;
 }
-
-/* .column {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 1em;
-} */
 
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;600;800&display=swap");
 
@@ -154,70 +139,3 @@ li {
   flex-direction: column;
   justify-content: space-between;
 }
-/* body {
-  font-family:
-    "Nunito",
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
-}
-
-button.btn-small {
-  font-size: 80%;
-}
-
-button.button-error {
-  color: white;
-  background: var(--red);
-}
-
-a {
-  color: black;
-  text-decoration: none;
-}
-
-a.button {
-  color: #212529;
-  background-color: #f1f3f5;
-  border: 1px solid #dee2e6;
-  border-radius: 0.25em;
-  padding: 0.375em 0.75em;
-  text-decoration: none;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 1em;
-}
-
-.main-button {
-  background-color: var(--main-accent);
-  border: 2px solid #000000;
-  width: max-content;
-  padding: 0.5em 1em;
-  border-radius: 4px;
-  font-size: 1.2em;
-  transition: 0.2s;
-}
-  */
-
-/* .main-page-heading {
-  padding-top: 1em;
-  margin-bottom: 0;
-  text-align: center;
-  font-size: 3em;
-} */
-/*
-
-.main-button:hover {
-  background-color: #f4d35e;
-}
-
-/* for debugging */
-
-/* .border {
-  border: 2px solid #39ff14;
-} */
