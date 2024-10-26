@@ -2,12 +2,12 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
+import { z } from "zod";
+
 import { Authing, Commenting, Friending, Grouping, Matching, Posting, Scheduling, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
-
-import { z } from "zod";
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -84,9 +84,9 @@ class Routes {
   }
 
   @Router.post("/posts")
-  async createPost(session: SessionDoc, content: string, options?: PostOptions) {
+  async createPost(session: SessionDoc, content: string, imageUrl?: string, options?: PostOptions) {
     const user = Sessioning.getUser(session);
-    const created = await Posting.create(user, content, options);
+    const created = await Posting.create(user, content, imageUrl, options);
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
 

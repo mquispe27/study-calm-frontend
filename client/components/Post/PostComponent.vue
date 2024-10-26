@@ -24,6 +24,7 @@ const deletePost = async () => {
 <template>
   <p class="author">{{ props.post.author }}</p>
   <p>{{ props.post.content }}</p>
+  <img v-if="props.post.imageUrl" :src="'/dist-server/api' + props.post.imageUrl" alt="Post Image" style="max-width: 50%" />
   <div class="base">
     <menu>
       <li v-if="props.post.author == currentUsername"><button class="btn-small" @click="emit('editPost', props.post._id)">Edit</button></li>
