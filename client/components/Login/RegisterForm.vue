@@ -39,4 +39,10 @@ h3 {
   display: flex;
   justify-content: center;
 }
+
+.pure-control-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
 </style>

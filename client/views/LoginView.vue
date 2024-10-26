@@ -10,3 +10,14 @@ import RegisterForm from "@/components/Login/RegisterForm.vue";
     <RegisterForm />
   </main>
 </template>
+
+<style scoped>
+h1 {
+  text-align: center;
+}
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+</style>
