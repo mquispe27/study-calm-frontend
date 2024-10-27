@@ -125,7 +125,7 @@ li {
 
 .sidebar {
   flex: 0 0 250px;
-  background-color: var(--background-color);
+  background-color: var(--base-bg);
   padding: 1em;
   box-shadow: var(--box-shadow);
 }

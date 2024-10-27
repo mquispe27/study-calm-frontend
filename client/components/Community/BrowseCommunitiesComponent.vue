@@ -75,8 +75,8 @@ p,
 }
 
 article {
-  background-color: var(--base-bg);
-  border-radius: 1em;
+  background-color: #f8fff9;
+  border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
   gap: 0.5em;

@@ -252,7 +252,7 @@ watch(selectedCommunity, async (newCommunity) => {
       <h2>{{ communityStore.selectedCommunity?.name }} Events</h2>
     </section>
     <section class="events" v-if="events?.length > 0">
-      <article v-for="event in events" :key="event._id">
+      <article v-for="event in events" :key="event._id" class="event-card">
         <div class="row">
           <div v-if="editingEvent === event._id">
             <input v-model="newEventNameEdit" placeholder="Edit event name" />
@@ -390,5 +390,13 @@ form {
   gap: 10px;
   margin-top: 1em;
   margin-bottom: 1em;
+}
+
+.event-card {
+  background-color: #f8fff9;
+  border-radius: var(--border-radius);
+  padding: 1em;
+  margin-bottom: 1em;
+  box-shadow: var(--box-shadow);
 }
 </style>
